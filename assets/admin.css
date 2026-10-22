@@ -1,0 +1,43 @@
+.hdform-guide__table {
+	max-width: 960px;
+}
+
+.hdform-guide__table th {
+	width: 140px;
+}
+
+.hdform-code {
+	max-width: 960px;
+	margin: 12px 0 20px;
+	border: 1px solid #3c434a;
+	border-radius: 4px;
+	background: #1d2327;
+	overflow: hidden;
+}
+
+.hdform-code__bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 8px 6px 14px;
+	border-bottom: 1px solid #3c434a;
+	color: #f0f0f1;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.hdform-code pre {
+	margin: 0;
+	padding: 14px;
+	max-height: 480px;
+	overflow: auto;
+	color: #f0f0f1;
+	font: 13px/1.6 Consolas, Monaco, monospace;
+}
+
+.hdform-code code {
+	padding: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+}
