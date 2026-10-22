@@ -3,7 +3,7 @@
  * Plugin Name:       Headless Form – Self-Hosted Form Backend via REST API
  * Plugin URI:        https://github.com/bealinawaz/headless-form
  * Description:       Receive form submissions from any website or app through a REST API endpoint. Submissions are saved in WordPress and emailed to you.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Ali Nawaz
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'HEADLESS_FORM_VERSION', '1.0.0' );
+define( 'HEADLESS_FORM_VERSION', '1.0.1' );
 define( 'HEADLESS_FORM_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/class-headless-form-settings.php';

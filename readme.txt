@@ -5,7 +5,7 @@ Tags: headless, form backend, contact form, rest api, form submissions
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,10 +94,18 @@ No, only the settings are removed, so messages are never lost by accident. To de
 
 == Changelog ==
 
+= 1.0.1 =
+* New: a View link for each submission in the list.
+* New: the notification status shows which address the email was sent to.
+* New: links to support, custom development, and donations on the settings and guide pages.
+
 = 1.0.0 =
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Shows who each notification was sent to and adds a View link to the submissions list.
 
 = 1.0.0 =
 Initial release.

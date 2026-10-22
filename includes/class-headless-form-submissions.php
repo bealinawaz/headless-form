@@ -18,6 +18,7 @@ final class Headless_Form_Submissions {
 	const META_STATUS  = '_hdform_email_status';
 	const META_FORM    = '_hdform_form';
 	const META_EMAIL   = '_hdform_email';
+	const META_SENT_TO = '_hdform_email_to';
 	const EXPORT_BATCH = 500;
 
 	/**
@@ -31,6 +32,7 @@ final class Headless_Form_Submissions {
 		add_action( 'restrict_manage_posts', array( __CLASS__, 'render_list_controls' ), 10, 2 );
 		add_action( 'pre_get_posts', array( __CLASS__, 'filter_by_form' ) );
 		add_action( 'admin_post_headless_form_export', array( __CLASS__, 'export_csv' ) );
+		add_filter( 'post_row_actions', array( __CLASS__, 'row_actions' ), 10, 2 );
 	}
 
 	/**
@@ -176,6 +178,59 @@ final class Headless_Form_Submissions {
 	}
 
 	/**
+	 * Notification status with the recipient, such as "Sent to owner@example.com".
+	 *
+	 * @param int $post_id Submission ID.
+	 * @return string
+	 */
+	public static function delivery_label( $post_id ) {
+		$status = (string) get_post_meta( $post_id, self::META_STATUS, true );
+		$to     = (string) get_post_meta( $post_id, self::META_SENT_TO, true );
+		if ( '' === $to ) {
+			return self::status_label( $status );
+		}
+		if ( 'sent' === $status ) {
+			/* translators: %s: recipient email addresses. */
+			return sprintf( __( 'Sent to %s', 'headless-form' ), $to );
+		}
+		if ( 'failed' === $status ) {
+			/* translators: %s: recipient email addresses. */
+			return sprintf( __( 'Failed to send to %s, submission saved', 'headless-form' ), $to );
+		}
+		return self::status_label( $status );
+	}
+
+	/**
+	 * Adds a View link and removes Quick Edit, which does not apply to submissions.
+	 *
+	 * @param array   $actions Row actions.
+	 * @param WP_Post $post    Submission.
+	 * @return array
+	 */
+	public static function row_actions( $actions, $post ) {
+		if ( self::POST_TYPE !== $post->post_type ) {
+			return $actions;
+		}
+		unset( $actions['inline hide-if-no-js'], $actions['edit'] );
+		$link = get_edit_post_link( $post->ID );
+		if ( $link ) {
+			$actions = array_merge(
+				array(
+					'view' => sprintf(
+						'<a href="%1$s" aria-label="%2$s">%3$s</a>',
+						esc_url( $link ),
+						/* translators: %s: submission title. */
+						esc_attr( sprintf( __( 'View “%s”', 'headless-form' ), get_the_title( $post ) ) ),
+						esc_html__( 'View', 'headless-form' )
+					),
+				),
+				$actions
+			);
+		}
+		return $actions;
+	}
+
+	/**
 	 * List table columns.
 	 *
 	 * @param array $columns Default columns.
@@ -215,7 +270,7 @@ final class Headless_Form_Submissions {
 			$origin  = is_array( $visitor ) && ! empty( $visitor['origin'] ) ? (string) $visitor['origin'] : '';
 			echo esc_html( '' !== $origin ? wp_parse_url( $origin, PHP_URL_HOST ) : '—' );
 		} elseif ( 'hdform_delivery' === $column ) {
-			echo esc_html( self::status_label( (string) get_post_meta( $post_id, self::META_STATUS, true ) ) );
+			echo esc_html( self::delivery_label( $post_id ) );
 		}
 	}
 
@@ -333,7 +388,7 @@ final class Headless_Form_Submissions {
 			$label = $labels[ $key ] ?? self::label_for( $key );
 			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>' . esc_html( self::format_value( $value ) ) . '</td></tr>';
 		}
-		echo '<tr><th scope="row">' . esc_html__( 'Email notification', 'headless-form' ) . '</th><td>' . esc_html( self::status_label( (string) get_post_meta( $post->ID, self::META_STATUS, true ) ) ) . '</td></tr>';
+		echo '<tr><th scope="row">' . esc_html__( 'Email notification', 'headless-form' ) . '</th><td>' . esc_html( self::delivery_label( $post->ID ) ) . '</td></tr>';
 		echo '</tbody></table>';
 	}
 
@@ -405,7 +460,7 @@ final class Headless_Form_Submissions {
 			foreach ( $ids as $id ) {
 				$fields  = (array) get_post_meta( $id, self::META_FIELDS, true );
 				$visitor = (array) get_post_meta( $id, self::META_VISITOR, true );
-				$row     = array( $id, get_post_time( 'Y-m-d H:i:s', true, $id ), get_post_meta( $id, self::META_FORM, true ), self::status_label( (string) get_post_meta( $id, self::META_STATUS, true ) ) );
+				$row     = array( $id, get_post_time( 'Y-m-d H:i:s', true, $id ), get_post_meta( $id, self::META_FORM, true ), self::delivery_label( $id ) );
 				foreach ( $field_keys as $key ) {
 					$row[] = $fields[ $key ] ?? '';
 				}

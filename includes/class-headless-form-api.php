@@ -162,7 +162,12 @@ final class Headless_Form_API {
 			return self::respond( self::error( 'storage', $settings['storage_failed_message'], 500 ), $is_json, $payload );
 		}
 
-		$status = $settings['email_notifications'] ? ( self::notify( $settings, $fields, $form, $email, $visitor ) ? 'sent' : 'failed' ) : 'disabled';
+		$status = 'disabled';
+		if ( $settings['email_notifications'] ) {
+			$sent_to = self::notify( $settings, $fields, $form, $email, $visitor );
+			$status  = $sent_to['sent'] ? 'sent' : 'failed';
+			update_post_meta( $post_id, Headless_Form_Submissions::META_SENT_TO, $sent_to['to'] );
+		}
 		update_post_meta( $post_id, Headless_Form_Submissions::META_STATUS, $status );
 
 		/**
@@ -476,7 +481,7 @@ final class Headless_Form_API {
 	 * @param string $form     Form identifier.
 	 * @param string $email    Sender email for Reply-To.
 	 * @param array  $visitor  Visitor details.
-	 * @return bool Whether WordPress accepted the email.
+	 * @return array Whether WordPress accepted the email (sent) and the recipients (to).
 	 */
 	private static function notify( array $settings, array $fields, $form, $email, array $visitor ) {
 		$lines = array();
@@ -515,7 +520,10 @@ final class Headless_Form_API {
 			$fields,
 			$form
 		);
-		return wp_mail( $mail['to'], $mail['subject'], $mail['message'], $mail['headers'] );
+		return array(
+			'sent' => wp_mail( $mail['to'], $mail['subject'], $mail['message'], $mail['headers'] ),
+			'to'   => implode( ', ', array_map( 'trim', is_array( $mail['to'] ) ? $mail['to'] : explode( ',', (string) $mail['to'] ) ) ),
+		);
 	}
 
 	/**

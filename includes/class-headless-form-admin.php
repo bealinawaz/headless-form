@@ -14,6 +14,9 @@ final class Headless_Form_Admin {
 
 	const SETTINGS_PAGE = 'headless-form-settings';
 	const GUIDE_PAGE    = 'headless-form-guide';
+	const AUTHOR_URL    = 'https://bealinawaz.com/';
+	const CONTACT_URL   = 'https://bealinawaz.com/contact-me/';
+	const DONATE_URL    = 'https://www.buymeacoffee.com/bealinawaz';
 
 	/**
 	 * Registers hooks.
@@ -23,6 +26,48 @@ final class Headless_Form_Admin {
 		add_action( 'admin_init', array( __CLASS__, 'register_setting' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( HEADLESS_FORM_FILE ), array( __CLASS__, 'action_links' ) );
+		add_filter( 'plugin_row_meta', array( __CLASS__, 'row_meta' ), 10, 2 );
+	}
+
+	/**
+	 * Adds custom development and donation links under the plugin description.
+	 *
+	 * @param array  $links Plugin meta links.
+	 * @param string $file  Plugin file.
+	 * @return array
+	 */
+	public static function row_meta( $links, $file ) {
+		if ( plugin_basename( HEADLESS_FORM_FILE ) !== $file ) {
+			return $links;
+		}
+		$links[] = '<a href="' . esc_url( self::CONTACT_URL ) . '" target="_blank" rel="noopener">' . esc_html__( 'Custom development', 'headless-form' ) . '</a>';
+		$links[] = '<a href="' . esc_url( self::DONATE_URL ) . '" target="_blank" rel="noopener">' . esc_html__( 'Buy me a coffee', 'headless-form' ) . '</a>';
+		return $links;
+	}
+
+	/**
+	 * Renders the author box with support, custom work, and donation links.
+	 */
+	private static function render_support() {
+		?>
+		<div class="hdform-support">
+			<h2><?php esc_html_e( 'Need help or a custom version?', 'headless-form' ); ?></h2>
+			<p>
+				<?php
+				printf(
+					/* translators: %s: link to the author's website. */
+					esc_html__( 'Headless Form is free and built by Ali Nawaz, a WordPress and full stack developer at %s. I can add file uploads, CRM, Slack, or webhook integrations, multi-step forms, or build your complete headless WordPress website.', 'headless-form' ),
+					'<a href="' . esc_url( self::AUTHOR_URL ) . '" target="_blank" rel="noopener">bealinawaz.com</a>'
+				);
+				?>
+			</p>
+			<p class="hdform-support__actions">
+				<a class="button button-primary" href="<?php echo esc_url( self::CONTACT_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Hire me for custom work', 'headless-form' ); ?></a>
+				<a class="button" href="<?php echo esc_url( self::AUTHOR_URL ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Visit bealinawaz.com', 'headless-form' ); ?></a>
+				<a class="button" href="<?php echo esc_url( self::DONATE_URL ); ?>" target="_blank" rel="noopener">&#9749; <?php esc_html_e( 'Buy me a coffee', 'headless-form' ); ?></a>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**
@@ -49,12 +94,12 @@ final class Headless_Form_Admin {
 	}
 
 	/**
-	 * Loads the guide's copy buttons on the guide page only.
+	 * Loads the admin styles and the guide's copy buttons on the plugin's own pages.
 	 *
 	 * @param string $hook Current admin page.
 	 */
 	public static function enqueue( $hook ) {
-		if ( false === strpos( $hook, self::GUIDE_PAGE ) ) {
+		if ( false === strpos( $hook, self::GUIDE_PAGE ) && false === strpos( $hook, self::SETTINGS_PAGE ) ) {
 			return;
 		}
 		$url = plugin_dir_url( HEADLESS_FORM_FILE ) . 'assets/';
@@ -201,6 +246,7 @@ final class Headless_Form_Admin {
 
 				<?php submit_button(); ?>
 			</form>
+			<?php self::render_support(); ?>
 		</div>
 		<?php
 	}
@@ -344,6 +390,7 @@ final class Headless_Form_Admin {
 				<li><code>headless_form_email</code> — <?php esc_html_e( 'filter the notification email.', 'headless-form' ); ?></li>
 				<li><code>headless_form_client_ip</code> — <?php esc_html_e( 'filter the visitor IP address, for sites behind a proxy or CDN.', 'headless-form' ); ?></li>
 			</ul>
+			<?php self::render_support(); ?>
 		</div>
 		<?php
 	}
